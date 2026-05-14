@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>生图关键词完善器 · 双子页面版</title>
+<title>生图关键词完善器 · 三子页面版</title>
 <style>
 :root{
   --bg:#f5f5f7;--card:#fff;--ink:#1d1d1f;--muted:#6e6e73;--line:rgba(0,0,0,.08);
@@ -34,12 +34,12 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}.hidden{display:
 </style>
 </head>
 <body>
-<nav class="nav"><div class="navin"><div class="brand"><div class="mark">✦</div><span>Prompt Studio</span></div><div class="navPages"><button class="navPage active" data-page="promptPage" onclick="setPage('promptPage')">关键词完善</button><button class="navPage" data-page="reversePage" onclick="setPage('reversePage')">图片反推</button></div></div></nav>
+<nav class="nav"><div class="navin"><div class="brand"><div class="mark">✦</div><span>Prompt Studio</span></div><div class="navPages"><button class="navPage active" data-page="promptPage" onclick="setPage('promptPage')">关键词完善</button><button class="navPage" data-page="reversePage" onclick="setPage('reversePage')">图片反推</button><button class="navPage" data-page="videoPage" onclick="setPage('videoPage')">视频关键词</button></div></div></nav>
 <main class="wrap">
 <section class="hero">
   <div class="heroMain">
-    <div><div class="eyebrow">Image Prompt Keyword Builder · Reverse Image Assist</div><h1>上传一张图，反推它的画面关键词。</h1><p>这版在原来的生图关键词完善器上，加了「图片反推辅助」。不接 API 时，它会用浏览器本地分析图片比例、主色、亮度、饱和度和视觉氛围；语义内容可以手动补充，后面接视觉模型时再升级成真正自动识图。</p></div>
-    <div class="actions"><button class="btn primary" onclick="setPage('reversePage')">上传图片反推</button><button class="btn ghost" onclick="applyXiaokangPreset()">小康机器人专用约束</button><button class="btn subtle" onclick="loadExample()">载入示例</button></div>
+    <div><div class="eyebrow">Image & Video Prompt Keyword Builder</div><h1>图片、视频提示词，都整理成能直接用的关键词。</h1><p>这版包含三个子页面：生图关键词完善、图片反推关键词、视频关键词完善。视频页重点补齐镜头运动、时长、节奏、动作变化、转场和负面关键词。</p></div>
+    <div class="actions"><button class="btn primary" onclick="setPage('promptPage')">完善图片关键词</button><button class="btn ghost" onclick="setPage('videoPage')">完善视频关键词</button><button class="btn subtle" onclick="setPage('reversePage')">上传图片反推</button></div>
   </div>
   <aside class="heroSide">
     <div class="scoreBox" id="scoreBox" style="--score:0"><div class="scoreContent"><div class="scoreNum" id="scoreNum">0</div><div class="scoreLabel">关键词完整度</div></div></div>
@@ -50,6 +50,7 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}.hidden{display:
 <div class="pageSwitch" aria-label="子页面切换">
   <button class="pageBtn active" data-page="promptPage" onclick="setPage('promptPage')">关键词完善</button>
   <button class="pageBtn" data-page="reversePage" onclick="setPage('reversePage')">图片反推关键词</button>
+  <button class="pageBtn" data-page="videoPage" onclick="setPage('videoPage')">视频关键词完善</button>
 </div>
 
 <section id="reverse" class="page" data-page-panel="reversePage">
@@ -90,7 +91,7 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}.hidden{display:
 <section class="pageIntro">
   <h2>关键词完善</h2>
   <p>从一句粗需求开始，补齐主体、场景、构图、光线、参考图要求和负面关键词。适合你日常做电商 KV、详情页场景图、产品细节图和功能 icon。</p>
-  <div class="pageIntroActions"><button class="btn ghost" onclick="setPage('reversePage')">去图片反推</button><button class="btn primary" onclick="applyXiaokangPreset()">小康机器人约束</button></div>
+  <div class="pageIntroActions"><button class="btn ghost" onclick="setPage('reversePage')">去图片反推</button><button class="btn ghost" onclick="setPage('videoPage')">去视频关键词</button><button class="btn primary" onclick="applyXiaokangPreset()">小康机器人约束</button></div>
 </section>
 
 <section id="templates">
@@ -118,12 +119,92 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}.hidden{display:
   <aside class="result" id="output"><div class="resultHead"><h3>生成结果</h3><button class="btn subtle" onclick="generateAll()">刷新</button></div><div class="tabs"><button class="tab active" data-view="prompt" onclick="setView('prompt')">完整提示词</button><button class="tab" data-view="keywords" onclick="setView('keywords')">关键词层</button><button class="tab" data-view="json" onclick="setView('json')">结构化</button><button class="tab" data-view="reverse" onclick="setView('reverse')">反推摘要</button></div><div class="output" id="resultText"></div><div class="outActions"><button class="btn primary" onclick="copyCurrent()">复制当前</button><button class="btn ghost" onclick="exportTxt()">导出 TXT</button><button class="btn dark full" onclick="copyPromptOnly()">只复制完整生图提示词</button><button class="btn danger full" onclick="resetAll()">清空重来</button></div><div class="notice">不接 API 的版本不会自动生图，也不会真正语义识别。它负责把图片的视觉参数和你的观察整理成更完整的提示词。</div></aside>
 </section>
 </div>
-<div class="footer">离线 HTML 工具，不依赖外部脚本。图片分析在浏览器本地完成，不上传服务器。建议：在「图片反推」页上传参考图 → 自动提取视觉参数 → 一键填入「关键词完善」页 → 复制完整提示词。</div>
+
+<section id="videoPage" class="page" data-page-panel="videoPage">
+  <section class="pageIntro">
+    <h2>视频关键词完善</h2>
+    <p>把“想做一个视频”拆成可执行的生成视频提示词：主体、场景、起止动作、镜头运动、时长节奏、风格光线、声音文字和负面关键词。</p>
+    <div class="pageIntroActions"><button class="btn ghost" onclick="setPage('promptPage')">回图片关键词</button><button class="btn ghost" onclick="setPage('reversePage')">去图片反推</button><button class="btn primary" onclick="videoPreset('cinematic')">载入电影感预设</button></div>
+  </section>
+
+  <section class="workspace">
+    <div>
+      <div class="panel">
+        <div class="phead"><h3>1. 视频核心想法</h3><span>先把视频讲清楚</span></div>
+        <div class="field"><label for="vIdea">一句话视频需求</label><textarea id="vIdea" placeholder="例：生成一个产品在桌面上缓慢旋转展示的高级商业短视频"></textarea></div>
+      </div>
+
+      <div class="panel">
+        <div class="phead"><h3>2. 主体、场景、动作变化</h3><span>视频比图片更怕动作不清</span></div>
+        <div class="grid2">
+          <div class="field"><label for="vSubject">视频主体</label><input id="vSubject" placeholder="例：一个人、一款产品、一只猫、城市街景" /></div>
+          <div class="field"><label for="vScene">场景环境</label><input id="vScene" placeholder="例：室内桌面、夜晚街道、阳光客厅、白色影棚" /></div>
+          <div class="field"><label for="vStart">开始画面 / 起始动作</label><input id="vStart" placeholder="例：主体静止在画面中央，镜头从远处慢慢靠近" /></div>
+          <div class="field"><label for="vEnd">结束画面 / 动作结果</label><input id="vEnd" placeholder="例：镜头停在产品细节特写，背景虚化" /></div>
+          <div class="field full"><label for="vAction">过程动作</label><textarea id="vAction" placeholder="例：人物缓慢转头看向镜头，头发轻微飘动；产品缓慢旋转，光线扫过表面"></textarea></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="phead"><h3>3. 镜头、时长、节奏</h3><span>生成视频的方向盘</span></div>
+        <div class="grid3">
+          <div class="field"><label for="vRatio">视频比例</label><select id="vRatio"><option value="9:16 竖版短视频">9:16 竖版</option><option value="16:9 横版视频">16:9 横版</option><option value="1:1 方形视频">1:1 方形</option><option value="4:5 竖版信息流视频">4:5 信息流</option></select></div>
+          <div class="field"><label for="vDuration">时长</label><select id="vDuration"><option value="5秒短视频">5 秒</option><option value="8秒短视频">8 秒</option><option value="10秒短视频">10 秒</option><option value="15秒短视频">15 秒</option></select></div>
+          <div class="field"><label for="vPace">节奏</label><select id="vPace"><option value="慢节奏，平稳流畅">慢节奏</option><option value="中等节奏，自然流畅">中等节奏</option><option value="快节奏，干脆有冲击力">快节奏</option></select></div>
+          <div class="field"><label for="vCamera">镜头运动</label><input id="vCamera" placeholder="例：缓慢推进、环绕、轻微俯拍、稳定跟拍" /></div>
+          <div class="field"><label for="vShot">景别</label><input id="vShot" placeholder="例：中景到特写、全景转近景、微距细节" /></div>
+          <div class="field"><label for="vTransition">转场 / 连贯性</label><input id="vTransition" placeholder="例：无跳切，动作连续，镜头平滑过渡" /></div>
+        </div>
+        <div style="height:16px"></div>
+        <div class="chips vchips" data-vtarget="vCamera"><span class="chip" data-value="镜头缓慢推进，运动平稳">缓慢推进</span><span class="chip" data-value="镜头围绕主体轻微环绕，保持主体居中">轻微环绕</span><span class="chip" data-value="稳定跟拍，主体始终清晰">稳定跟拍</span><span class="chip" data-value="由远景逐渐切到近景特写">远到近</span></div>
+      </div>
+
+      <div class="panel">
+        <div class="phead"><h3>4. 画面风格、光线、声音</h3><span>视频也需要视觉统一</span></div>
+        <div class="grid2">
+          <div class="field"><label for="vStyle">视频风格</label><input id="vStyle" placeholder="例：真实摄影、电影感、商业广告、极简产品片" /></div>
+          <div class="field"><label for="vLighting">光线</label><input id="vLighting" placeholder="例：柔和自然光、棚拍柔光、夜景霓虹、暖色室内光" /></div>
+          <div class="field"><label for="vColor">色彩</label><input id="vColor" placeholder="例：低饱和高级灰、暖白浅木色、蓝白科技感" /></div>
+          <div class="field"><label for="vAudio">声音 / 氛围</label><input id="vAudio" placeholder="例：无对白，轻微环境音，柔和背景音乐氛围" /></div>
+          <div class="field full"><label for="vText">文字 / Logo 要求</label><textarea id="vText" placeholder="例：不要出现文字和 logo；或保留底部 12% 安全留白用于后期加字"></textarea></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="phead"><h3>5. 禁区与负面关键词</h3><span>防止视频乱抖、乱变形</span></div>
+        <div class="grid2">
+          <div class="field"><label for="vMustNot">明确不要</label><textarea id="vMustNot" placeholder="例：不要镜头突然跳切，不要主体变形，不要多余文字，不要低清晰度"></textarea></div>
+          <div class="field"><label for="vNegative">负面关键词</label><textarea id="vNegative" placeholder="例：画面闪烁、主体漂移、手指畸形、人物变脸、背景融化、运动模糊过度、低清晰度"></textarea></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="phead"><h3>快速视频预设</h3><span>先定视频类型</span></div>
+        <div class="miniGrid">
+          <div class="mini" onclick="videoPreset('product')"><b>产品展示</b><p>旋转、扫光、特写、高级商业感。</p></div>
+          <div class="mini" onclick="videoPreset('cinematic')"><b>电影感场景</b><p>自然动作、浅景深、慢镜头。</p></div>
+          <div class="mini" onclick="videoPreset('social')"><b>短视频信息流</b><p>节奏更快，画面抓眼，竖版。</p></div>
+          <div class="mini" onclick="videoPreset('loop')"><b>循环动效</b><p>首尾衔接，适合背景循环。</p></div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="result">
+      <div class="resultHead"><h3>视频提示词结果</h3><button class="btn subtle" onclick="generateVideoAll()">刷新</button></div>
+      <div class="tabs"><button class="tab videoTab active" data-vview="videoPrompt" onclick="setVideoView('videoPrompt')">完整提示词</button><button class="tab videoTab" data-vview="videoShot" onclick="setVideoView('videoShot')">分镜拆解</button><button class="tab videoTab" data-vview="videoJson" onclick="setVideoView('videoJson')">结构化</button></div>
+      <div class="output" id="videoResultText"></div>
+      <div class="outActions"><button class="btn primary" onclick="copyVideoCurrent()">复制当前</button><button class="btn ghost" onclick="exportVideoTxt()">导出 TXT</button><button class="btn dark full" onclick="copyVideoPromptOnly()">只复制完整视频提示词</button><button class="btn danger full" onclick="resetVideo()">清空视频页</button></div>
+      <div class="notice">这个页面只负责完善生成视频关键词，不调用视频模型。后续接入具体平台时，可按平台习惯继续微调字段。</div>
+    </aside>
+  </section>
+</section>
+
+<div class="footer">离线 HTML 工具，不依赖外部脚本。图片分析在浏览器本地完成，不上传服务器。建议：图片页做静态生图提示词，反推页提取参考图参数，视频页补齐镜头运动和动作变化。</div>
 </main>
 <canvas id="analysisCanvas"></canvas><div class="toast" id="toast">已复制</div>
 <script>
 const $=id=>document.getElementById(id);
-function setPage(page){document.querySelectorAll('[data-page-panel]').forEach(el=>el.classList.toggle('active',el.dataset.pagePanel===page));document.querySelectorAll('[data-page]').forEach(btn=>btn.classList.toggle('active',btn.dataset.page===page));const target=page==='reversePage'?$('reverse'):$('promptPage');if(target) target.scrollIntoView({behavior:'smooth',block:'start'});}
+function setPage(page){document.querySelectorAll('[data-page-panel]').forEach(el=>el.classList.toggle('active',el.dataset.pagePanel===page));document.querySelectorAll('[data-page]').forEach(btn=>btn.classList.toggle('active',btn.dataset.page===page));const targetMap={promptPage:'promptPage',reversePage:'reverse',videoPage:'videoPage'};const target=$(targetMap[page]||'promptPage');if(target) target.scrollIntoView({behavior:'smooth',block:'start'});}
 const ids=['rawIdea','subject','scene','interaction','emotion','ratio','camera','layout','style','lighting','color','texture','reference','scale','mustNot','negative','reverseSubject','reverseScene','reverseSemantic'];
 let currentTemplate='ecommerce', currentView='prompt';
 let imageAnalysis=null;
@@ -174,7 +255,37 @@ function setupUpload(){const input=$('imageInput'),drop=$('dropZone'),img=$('pre
 document.querySelectorAll('.chips').forEach(g=>{const target=g.dataset.target;g.addEventListener('click',e=>{const chip=e.target.closest('.chip');if(!chip)return;chip.classList.toggle('active');appendValue(target,chip.dataset.value);generateAll();});});
 ids.forEach(id=>{if($(id)){ $(id).addEventListener('input',generateAll); $(id).addEventListener('change',generateAll); }});
 function restore(){try{const saved=localStorage.getItem('reverseImagePromptBuilderData');if(saved){const d=JSON.parse(saved);ids.forEach(id=>{if($(id)&&d[id]!==undefined)$(id).value=d[id]});currentTemplate=d.template||'ecommerce';document.querySelectorAll('.tpl').forEach(c=>c.classList.toggle('active',c.dataset.template===currentTemplate));}else selectTemplate('ecommerce');}catch(e){selectTemplate('ecommerce')}generateAll();}
-setupUpload();restore();
+
+
+const videoIds=['vIdea','vSubject','vScene','vStart','vEnd','vAction','vRatio','vDuration','vPace','vCamera','vShot','vTransition','vStyle','vLighting','vColor','vAudio','vText','vMustNot','vNegative'];
+let currentVideoView='videoPrompt';
+let videoCache={videoPrompt:'',videoShot:'',videoJson:''};
+const videoPresets={
+ product:{vIdea:'生成一个高级商业产品展示短视频。',vSubject:'产品主体',vScene:'干净影棚或极简桌面场景',vStart:'产品静止在画面中央，背景干净，轮廓清晰',vEnd:'镜头停留在产品细节特写，突出质感和高级感',vAction:'产品缓慢旋转，柔和光线扫过产品表面，细节逐渐显现',vRatio:'9:16 竖版短视频',vDuration:'8秒短视频',vPace:'慢节奏，平稳流畅',vCamera:'镜头缓慢推进，轻微环绕主体',vShot:'中景到产品细节特写',vTransition:'动作连续，无跳切，镜头平滑过渡',vStyle:'真实摄影，商业广告质感，干净高级',vLighting:'柔和棚拍光，边缘高光自然，阴影干净',vColor:'低饱和高级灰，浅色背景，少量品牌色点缀',vAudio:'无对白，轻微高级感背景音乐氛围',vText:'不要出现文字和 logo，底部保留安全留白用于后期加字',vMustNot:'不要主体变形，不要镜头突然跳切，不要过度运动模糊',vNegative:'主体漂移、产品变形、低清晰度、背景融化、闪烁、过曝、噪点、文字乱码'},
+ cinematic:{vIdea:'生成一个电影感真实场景短视频。',vSubject:'画面主体',vScene:'有空间层次的真实环境',vStart:'主体自然进入画面或保持安静状态',vEnd:'主体完成一个轻微动作，画面停留在稳定构图上',vAction:'主体做自然、缓慢、可信的动作，环境有轻微动态细节',vRatio:'16:9 横版视频',vDuration:'8秒短视频',vPace:'慢节奏，平稳流畅',vCamera:'稳定跟拍或缓慢推进，镜头运动克制',vShot:'中景到近景，浅景深',vTransition:'连续镜头，无突兀转场',vStyle:'真实摄影，电影感，浅景深，自然质感',vLighting:'柔和自然光，明暗层次自然',vColor:'低饱和电影色调，色彩统一',vAudio:'轻微环境音，安静氛围',vText:'不要文字，不要 logo',vMustNot:'不要人物变脸，不要肢体畸形，不要背景融化，不要镜头乱晃',vNegative:'闪烁、跳帧、变脸、肢体畸形、背景扭曲、运动不连续、低清晰度'},
+ social:{vIdea:'生成一个适合社媒信息流的抓眼短视频。',vSubject:'核心主体',vScene:'简洁但有视觉冲击力的场景',vStart:'开头 1 秒主体快速进入视觉焦点',vEnd:'结尾停留在清晰主体画面，适合加标题',vAction:'主体有明确动作变化，节奏清晰，视觉焦点始终稳定',vRatio:'9:16 竖版短视频',vDuration:'5秒短视频',vPace:'快节奏，干脆有冲击力',vCamera:'快速但稳定的推进或轻微环绕',vShot:'近景和特写为主',vTransition:'转场干净，避免复杂跳切',vStyle:'真实摄影，明亮抓眼，商业短视频风格',vLighting:'明亮均匀，主体突出',vColor:'色彩鲜明但不过度饱和',vAudio:'可搭配轻快背景音乐，无需对白',vText:'预留顶部或底部安全留白用于后期加字',vMustNot:'不要画面杂乱，不要主体丢失，不要文字乱码',vNegative:'主体漂移、低清晰度、闪烁、过度运动模糊、杂乱背景、文字乱码'},
+ loop:{vIdea:'生成一个可以无缝循环的背景动效视频。',vSubject:'抽象光效或主体元素',vScene:'干净背景或渐变空间',vStart:'首帧与尾帧画面状态接近',vEnd:'结尾自然回到接近开头的状态，形成无缝循环',vAction:'元素缓慢流动、呼吸、旋转或发光，运动规律稳定',vRatio:'16:9 横版视频',vDuration:'5秒短视频',vPace:'慢节奏，平稳流畅',vCamera:'固定镜头或极轻微推拉',vShot:'整体画面稳定',vTransition:'首尾衔接，无明显断点',vStyle:'干净科技感，柔和渐变，抽象动态背景',vLighting:'柔和发光，亮度稳定',vColor:'统一色系，低饱和或科技蓝紫',vAudio:'无声音',vText:'不要文字，不要 logo',vMustNot:'不要突兀闪烁，不要剧烈变形，不要跳帧',vNegative:'闪烁、断帧、跳切、噪点、画面撕裂、低清晰度'}
+};
+function vval(id){const el=$(id);return el?el.value.trim():'';}
+function setV(id,val){if($(id))$(id).value=val||'';}
+function appendV(id,text){const el=$(id);if(!el||!text)return;const cur=el.value.trim();if(!cur)el.value=text;else if(!cur.includes(text))el.value=cur+'，'+text;}
+function videoPreset(name){const p=videoPresets[name];if(!p)return;Object.entries(p).forEach(([k,v])=>setV(k,v));generateVideoAll();toast('已载入视频预设');}
+function collectVideo(){const d={};videoIds.forEach(id=>d[id]=vval(id));return d;}
+function generateVideoPrompt(d){const parts=[];if(d.vIdea)parts.push(`任务：${d.vIdea}`);parts.push(d.vSubject?`主体：${d.vSubject}`:'');parts.push(d.vScene?`场景：${d.vScene}`:'');parts.push(d.vStart?`开始画面：${d.vStart}`:'');parts.push(d.vAction?`过程动作：${d.vAction}`:'');parts.push(d.vEnd?`结束画面：${d.vEnd}`:'');parts.push(d.vRatio?`画面比例：${d.vRatio}`:'');parts.push(d.vDuration?`时长：${d.vDuration}`:'');parts.push(d.vPace?`节奏：${d.vPace}`:'');parts.push(d.vCamera?`镜头运动：${d.vCamera}`:'');parts.push(d.vShot?`景别：${d.vShot}`:'');parts.push(d.vTransition?`转场与连贯性：${d.vTransition}`:'');parts.push(d.vStyle?`视频风格：${d.vStyle}`:'');parts.push(d.vLighting?`光线：${d.vLighting}`:'');parts.push(d.vColor?`色彩：${d.vColor}`:'');parts.push(d.vAudio?`声音氛围：${d.vAudio}`:'');parts.push(d.vText?`文字要求：${d.vText}`:'');parts.push(d.vMustNot?`不要出现：${d.vMustNot}`:'');parts.push(d.vNegative?`负面关键词：${d.vNegative}`:'');return parts.filter(Boolean).join('，\n')+'。';}
+function generateVideoShot(d){return [`【0% 开始画面】\n${d.vStart||'待补充开始画面'}\n`,`【20%-80% 动作过程】\n${d.vAction||'待补充过程动作'}\n镜头：${d.vCamera||'待补充镜头运动'}\n节奏：${d.vPace||'待补充节奏'}\n`,`【100% 结束画面】\n${d.vEnd||'待补充结束画面'}\n`,`【统一视觉】\n${[d.vStyle,d.vLighting,d.vColor,d.vShot].filter(Boolean).join('，')||'待补充风格、光线、色彩、景别'}\n`,`【禁区】\n${[d.vMustNot,d.vNegative].filter(Boolean).join('，')||'待补充不要出现的内容'}`].join('\n');}
+function generateVideoJson(d){return JSON.stringify({video_task:d.vIdea,subject:d.vSubject,scene:d.vScene,motion:{start_frame:d.vStart,process_action:d.vAction,end_frame:d.vEnd},camera:{aspect_ratio:d.vRatio,duration:d.vDuration,pace:d.vPace,movement:d.vCamera,shot_size:d.vShot,transition:d.vTransition},visual_style:{style:d.vStyle,lighting:d.vLighting,color:d.vColor},audio_and_text:{audio:d.vAudio,text_rule:d.vText},negative:{must_not:d.vMustNot,negative_keywords:d.vNegative},final_prompt_cn:generateVideoPrompt(d)},null,2);}
+function generateVideoAll(){const d=collectVideo();videoCache.videoPrompt=generateVideoPrompt(d);videoCache.videoShot=generateVideoShot(d);videoCache.videoJson=generateVideoJson(d);renderVideoView();try{localStorage.setItem('videoPromptBuilderData',JSON.stringify(d));}catch(e){}}
+function setVideoView(v){currentVideoView=v;document.querySelectorAll('.videoTab').forEach(t=>t.classList.toggle('active',t.dataset.vview===v));renderVideoView();}
+function renderVideoView(){const out=$('videoResultText');if(!out)return;out.classList.toggle('mono',currentVideoView==='videoJson');out.textContent=videoCache[currentVideoView]||'';}
+function copyVideoCurrent(){copyText(videoCache[currentVideoView]||'');}
+function copyVideoPromptOnly(){copyText(videoCache.videoPrompt||'');}
+function exportVideoTxt(){const content=`视频关键词完善器导出\n\n【完整提示词】\n${videoCache.videoPrompt}\n\n【分镜拆解】\n${videoCache.videoShot}\n\n【结构化】\n${videoCache.videoJson}`;const blob=new Blob([content],{type:'text/plain;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='视频关键词完善结果.txt';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);toast('已导出视频 TXT');}
+function resetVideo(){videoIds.forEach(id=>setV(id,''));try{localStorage.removeItem('videoPromptBuilderData');}catch(e){}generateVideoAll();toast('已清空视频页');}
+function restoreVideo(){try{const saved=localStorage.getItem('videoPromptBuilderData');if(saved){const d=JSON.parse(saved);videoIds.forEach(id=>{if(d[id]!==undefined)setV(id,d[id]);});}else{videoPreset('product');return;}}catch(e){videoPreset('product');return;}generateVideoAll();}
+document.querySelectorAll('.vchips').forEach(g=>{const target=g.dataset.vtarget;g.addEventListener('click',e=>{const chip=e.target.closest('.chip');if(!chip)return;chip.classList.toggle('active');appendV(target,chip.dataset.value);generateVideoAll();});});
+videoIds.forEach(id=>{if($(id)){ $(id).addEventListener('input',generateVideoAll); $(id).addEventListener('change',generateVideoAll); }});
+
+setupUpload();restore();restoreVideo();
 </script>
 </body>
 </html>
