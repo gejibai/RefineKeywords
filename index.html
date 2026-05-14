@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>生图关键词完善器</title>
+  <style>
+    :root {
+      --bg: #f5f5f7;
+      --card: rgba(255,255,255,0.92);
+      --card-solid: #ffffff;
+      --ink: #1d1d1f;
+      --muted: #6e6e73;
+      --line: rgba(0,0,0,0.08);
+      --blue: #0071e3;
+      --blue-2: #e8f2ff;
+      --green: #2da44e;
+      --orange: #bf5b00;
+      --shadow: 0 18px 45px rgba(0,0,0,0.08);
+      --shadow-soft: 0 10px 28px rgba(0,0,0,0.06);
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      background: radial-gradient(circle at top left, #ffffff 0, var(--bg) 34%, #eeeeef 100%);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(24px);
+      background: rgba(245,245,247,0.78);
+      border-bottom: 1px solid var(--line);
+    }
+    .nav-inner {
+      max-width: 1260px;
+      margin: 0 auto;
+      padding: 14px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 750;
+      letter-spacing: -0.02em;
+    }
+    .brand-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #1d1d1f, #5a5a60);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+      display: grid;
+      place-items: center;
+      color: white;
+      font-size: 15px;
+    }
+    .nav-links {
+      display: flex;
+      gap: 18px;
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .nav-links a { color: inherit; text-decoration: none; }
+    .nav-links a:hover { color: var(--ink); }
+
+    .wrap {
+      max-width: 1260px;
+      margin: 0 auto;
+      padding: 38px 22px 72px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 24px;
+      align-items: stretch;
+      margin-bottom: 24px;
+    }
+    .hero-main, .hero-side, .panel, .result-panel, .mini-card, .template-card {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.75);
+      box-shadow: var(--shadow-soft);
+      border-radius: var(--radius-xl);
+    }
+    .hero-main {
+      padding: 44px;
+      min-height: 360px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      position: relative;
+    }
+    .hero-main::after {
+      content: "";
+      position: absolute;
+      width: 420px;
+      height: 420px;
+      right: -120px;
+      bottom: -170px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,113,227,0.16), rgba(0,113,227,0.04) 52%, transparent 72%);
+      pointer-events: none;
+    }
+    .eyebrow {
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 650;
+      margin-bottom: 12px;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(42px, 6vw, 72px);
+      line-height: 0.96;
+      letter-spacing: -0.065em;
+      max-width: 780px;
+    }
+    .hero-copy {
+      margin: 22px 0 0;
+      max-width: 660px;
+      color: var(--muted);
+      font-size: 19px;
+      line-height: 1.58;
+    }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+      z-index: 1;
+    }
+    .btn {
+      appearance: none;
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+      font-family: var(--sans);
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--blue); color: white; box-shadow: 0 8px 18px rgba(0,113,227,.25); }
+    .btn-ghost { background: #ffffff; color: var(--blue); border: 1px solid var(--line); }
+    .btn-dark { background: #1d1d1f; color: white; }
+    .btn-subtle { background: #f2f2f4; color: #1d1d1f; }
+    .btn-danger { background: #fff2f2; color: #b42318; }
+
+    .hero-side {
+      padding: 26px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 18px;
+    }
+    .score-ring {
+      height: 188px;
+      border-radius: 28px;
+      background: linear-gradient(145deg, #ffffff, #edf4ff);
+      border: 1px solid var(--line);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .score-ring::before {
+      content: "";
+      width: 126px;
+      height: 126px;
+      border-radius: 50%;
+      background: conic-gradient(var(--blue) calc(var(--score, 0) * 1%), #dde0e6 0);
+      position: absolute;
+    }
+    .score-ring::after {
+      content: "";
+      width: 92px;
+      height: 92px;
+      border-radius: 50%;
+      background: #fff;
+      position: absolute;
+      box-shadow: inset 0 0 0 1px var(--line);
+    }
+    .score-content { position: relative; z-index: 1; }
+    .score-number { font-size: 38px; font-weight: 800; letter-spacing: -0.04em; }
+    .score-label { color: var(--muted); font-size: 13px; margin-top: 2px; }
+    .check-list {
+      display: grid;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 11px 12px;
+      border-radius: 16px;
+      background: #f7f7f8;
+    }
+    .check-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      flex: 0 0 auto;
+      margin-top: 1px;
+      background: #d8d8dc;
+      color: white;
+      font-size: 12px;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+    }
+    .check-item.ok .check-dot { background: var(--green); }
+    .check-item.warn .check-dot { background: var(--orange); }
+
+    .section-title {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 18px;
+      margin: 36px 4px 16px;
+    }
+    .section-title h2 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 44px);
+      letter-spacing: -0.045em;
+    }
+    .section-title p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 620px;
+      line-height: 1.5;
+      font-size: 15px;
+    }
+
+    .category-strip {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(152px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .template-card {
+      padding: 18px;
+      min-height: 128px;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease, border .18s ease;
+      border: 1px solid rgba(255,255,255,0.9);
+    }
+    .template-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+    .template-card.active { outline: 2px solid rgba(0,113,227,.26); border-color: rgba(0,113,227,.28); }
+    .template-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      background: #f2f2f4;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      margin-bottom: 14px;
+    }
+    .template-name { font-size: 16px; font-weight: 750; letter-spacing: -0.02em; }
+    .template-desc { color: var(--muted); font-size: 12px; line-height: 1.45; margin-top: 6px; }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 430px;
+      gap: 24px;
+      align-items: start;
+    }
+    .panel, .result-panel { padding: 24px; }
+    .panel + .panel { margin-top: 18px; }
+    .panel-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .panel-title h3 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: -0.03em;
+    }
+    .panel-title span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .field { display: flex; flex-direction: column; gap: 8px; }
+    label { font-weight: 700; font-size: 13px; color: #333336; }
+    .hint { color: var(--muted); font-size: 12px; line-height: 1.4; font-weight: 500; }
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: #fbfbfd;
+      color: var(--ink);
+      padding: 13px 14px;
+      font-family: var(--sans);
+      font-size: 14px;
+      outline: none;
+      transition: border .16s ease, box-shadow .16s ease, background .16s ease;
+    }
+    textarea { min-height: 96px; resize: vertical; line-height: 1.55; }
+    input:focus, textarea:focus, select:focus {
+      border-color: rgba(0,113,227,.52);
+      box-shadow: 0 0 0 4px rgba(0,113,227,.12);
+      background: white;
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 9px; }
+    .chip {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 999px;
+      padding: 9px 12px;
+      font-size: 13px;
+      color: #333336;
+      cursor: pointer;
+      user-select: none;
+      transition: all .16s ease;
+    }
+    .chip:hover { border-color: rgba(0,113,227,.34); color: var(--blue); transform: translateY(-1px); }
+    .chip.active {
+      background: var(--blue-2);
+      color: var(--blue);
+      border-color: rgba(0,113,227,.32);
+      font-weight: 750;
+    }
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .mini-card {
+      padding: 15px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease;
+      min-height: 92px;
+    }
+    .mini-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-soft); }
+    .mini-card strong { display: block; font-size: 14px; margin-bottom: 6px; }
+    .mini-card p { margin: 0; font-size: 12px; color: var(--muted); line-height: 1.45; }
+
+    .result-panel {
+      position: sticky;
+      top: 82px;
+      box-shadow: var(--shadow);
+    }
+    .result-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .result-head h3 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: -0.03em;
+    }
+    .tabs {
+      display: flex;
+      background: #f2f2f4;
+      border-radius: 999px;
+      padding: 4px;
+      gap: 2px;
+      margin-bottom: 14px;
+    }
+    .tab {
+      flex: 1;
+      border: 0;
+      background: transparent;
+      border-radius: 999px;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 750;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: var(--sans);
+    }
+    .tab.active { background: white; color: var(--ink); box-shadow: 0 4px 12px rgba(0,0,0,.06); }
+    .output {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: #fbfbfd;
+      padding: 16px;
+      min-height: 360px;
+      max-height: 580px;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.65;
+      font-size: 14px;
+    }
+    .output.mono { font-family: var(--mono); font-size: 12.5px; }
+    .result-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+    .result-actions .btn { width: 100%; }
+    .full { grid-column: 1 / -1; }
+    .notice {
+      padding: 13px 14px;
+      border-radius: 18px;
+      background: #fff9e8;
+      color: #694500;
+      font-size: 13px;
+      line-height: 1.5;
+      margin-top: 14px;
+      border: 1px solid rgba(191,91,0,.12);
+    }
+    .footer {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+      text-align: center;
+      padding: 34px 12px 0;
+    }
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 30px;
+      transform: translateX(-50%) translateY(16px);
+      background: rgba(29,29,31,.94);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease, transform .2s ease;
+      z-index: 100;
+      box-shadow: 0 12px 32px rgba(0,0,0,.2);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 1100px) {
+      .hero, .workspace { grid-template-columns: 1fr; }
+      .result-panel { position: static; }
+      .category-strip { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 720px) {
+      .wrap { padding: 24px 14px 48px; }
+      .nav-links { display: none; }
+      .hero-main { padding: 30px 24px; min-height: 420px; }
+      .hero-copy { font-size: 16px; }
+      .category-strip, .grid-2, .grid-3, .mini-grid { grid-template-columns: 1fr; }
+      .section-title { align-items: flex-start; flex-direction: column; }
+      .panel, .result-panel, .hero-side { padding: 18px; border-radius: 24px; }
+      .result-actions { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="brand"><div class="brand-dot">✦</div><span>Prompt Studio</span></div>
+      <div class="nav-links">
+        <a href="#templates">场景模板</a>
+        <a href="#builder">关键词完善</a>
+        <a href="#output">输出结果</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="hero-main">
+        <div>
+          <div class="eyebrow">Image Prompt Keyword Builder</div>
+          <h1>把一句模糊想法，打磨成可控生图关键词。</h1>
+          <p class="hero-copy">适合电商详情页、产品 KV、真实摄影场景、图标、海报和风格化图像。选择场景，补齐主体、构图、光线、材质、禁区，它会自动整理成可复制的生图提示词。</p>
+        </div>
+        <div class="hero-actions">
+          <button class="btn btn-primary" onclick="scrollToBuilder()">开始完善</button>
+          <button class="btn btn-ghost" onclick="applyXiaokangPreset()">小康机器人专用预设</button>
+          <button class="btn btn-subtle" onclick="loadExample()">载入示例</button>
+        </div>
+      </div>
+      <aside class="hero-side">
+        <div class="score-ring" id="scoreRing" style="--score:0">
+          <div class="score-content">
+            <div class="score-number" id="scoreNumber">0</div>
+            <div class="score-label">关键词完整度</div>
+          </div>
+        </div>
+        <div class="check-list" id="checkList"></div>
+      </aside>
+    </section>
+
+    <section id="templates">
+      <div class="section-title">
+        <h2>先选一个图像任务。</h2>
+        <p>选模板不是为了限制创意，而是先定“画面的骨架”。骨架不清楚，关键词再华丽也容易变成香料倒进抽屉。</p>
+      </div>
+      <div class="category-strip" id="templateStrip">
+        <div class="template-card active" data-template="ecommerce" onclick="selectTemplate('ecommerce')">
+          <div class="template-icon">🛍️</div>
+          <div class="template-name">电商首屏 KV</div>
+          <div class="template-desc">强卖点、强主体、适合 9:16 / 1:1。</div>
+        </div>
+        <div class="template-card" data-template="scene" onclick="selectTemplate('scene')">
+          <div class="template-icon">🏠</div>
+          <div class="template-name">生活场景图</div>
+          <div class="template-desc">人物互动、真实摄影、氛围感。</div>
+        </div>
+        <div class="template-card" data-template="detail" onclick="selectTemplate('detail')">
+          <div class="template-icon">🔍</div>
+          <div class="template-name">产品细节图</div>
+          <div class="template-desc">材质、结构、局部放大、科技感。</div>
+        </div>
+        <div class="template-card" data-template="icon" onclick="selectTemplate('icon')">
+          <div class="template-icon">◼</div>
+          <div class="template-name">剪影 Icon</div>
+          <div class="template-desc">透明背景、简单符号、详情页功能点。</div>
+        </div>
+        <div class="template-card" data-template="poster" onclick="selectTemplate('poster')">
+          <div class="template-icon">▦</div>
+          <div class="template-name">海报版式</div>
+          <div class="template-desc">卡片布局、标题区、信息分层。</div>
+        </div>
+        <div class="template-card" data-template="style" onclick="selectTemplate('style')">
+          <div class="template-icon">🎨</div>
+          <div class="template-name">风格转化</div>
+          <div class="template-desc">插画、涂鸦、二次元、手账风。</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="builder" class="workspace">
+      <div>
+        <div class="panel">
+          <div class="panel-title">
+            <h3>1. 原始想法</h3>
+            <span>先把脑袋里的毛线团倒出来</span>
+          </div>
+          <div class="field">
+            <label for="rawIdea">一句话需求</label>
+            <textarea id="rawIdea" placeholder="例：生成一张小男孩写作业，小康机器人在桌上辅导他的真实摄影场景图"></textarea>
+            <div class="hint">这里可以很粗糙，后面会自动补结构。</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">
+            <h3>2. 主体与场景</h3>
+            <span>画面最容易翻车的地方</span>
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label for="subject">主体</label>
+              <input id="subject" placeholder="例：小康机器人、小男孩、老人、产品本体" />
+            </div>
+            <div class="field">
+              <label for="scene">场景</label>
+              <input id="scene" placeholder="例：温馨家庭客厅、儿童书桌、高级实验室" />
+            </div>
+            <div class="field">
+              <label for="interaction">动作 / 关系</label>
+              <input id="interaction" placeholder="例：机器人在辅导写作业，孩子看着机器人提问" />
+            </div>
+            <div class="field">
+              <label for="emotion">情绪氛围</label>
+              <input id="emotion" placeholder="例：安心、温馨、可信、轻松、有陪伴感" />
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">
+            <h3>3. 构图与画面控制</h3>
+            <span>给模型装上方向盘</span>
+          </div>
+          <div class="grid-3">
+            <div class="field">
+              <label for="ratio">画面比例</label>
+              <select id="ratio">
+                <option value="9:16 竖版电商详情页构图">9:16 竖版</option>
+                <option value="1:1 方图构图">1:1 方图</option>
+                <option value="4:3 横向构图">4:3 横图</option>
+                <option value="16:9 横向海报构图">16:9 横图</option>
+                <option value="透明背景单元素">透明背景单元素</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="camera">镜头 / 视角</label>
+              <input id="camera" placeholder="例：低机位、肩膀视角、正面产品视角、俯拍" />
+            </div>
+            <div class="field">
+              <label for="layout">布局重点</label>
+              <input id="layout" placeholder="例：主体居中，右侧留标题空间，前景清晰背景虚化" />
+            </div>
+          </div>
+          <div style="height:16px"></div>
+          <div class="chips" data-target="layout">
+            <span class="chip" data-value="主体明确，画面干净，视觉焦点集中">主体明确</span>
+            <span class="chip" data-value="左侧放产品，右侧留出标题和卖点文案空间">右侧留文案</span>
+            <span class="chip" data-value="前景主体清晰，背景柔和虚化，浅景深">浅景深</span>
+            <span class="chip" data-value="卡片式信息分区，圆角模块，层级清楚">卡片分区</span>
+            <span class="chip" data-value="产品局部放大展示，细节清晰可见">局部放大</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">
+            <h3>4. 风格、光线、质感</h3>
+            <span>别只写“高级感”这类雾气词</span>
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label for="style">画面风格</label>
+              <input id="style" placeholder="例：真实摄影、电商精修、干净高级、科技感" />
+            </div>
+            <div class="field">
+              <label for="lighting">光线</label>
+              <input id="lighting" placeholder="例：柔和窗光、蓝白实验室光、暖色室内光" />
+            </div>
+            <div class="field">
+              <label for="color">色彩</label>
+              <input id="color" placeholder="例：暖白、浅木色、柔和蓝白、低饱和高级灰" />
+            </div>
+            <div class="field">
+              <label for="texture">细节质感</label>
+              <input id="texture" placeholder="例：真实材质、产品边缘清晰、皮肤自然、桌面纹理细腻" />
+            </div>
+          </div>
+          <div style="height:16px"></div>
+          <div class="chips" data-target="style">
+            <span class="chip" data-value="真实摄影质感">真实摄影</span>
+            <span class="chip" data-value="电商详情页视觉，干净明亮，高级商业摄影">电商精修</span>
+            <span class="chip" data-value="科技感，柔和渐变，干净高级">科技感</span>
+            <span class="chip" data-value="彩铅、蜡笔、手账贴纸、MS Paint 涂鸦风，粗糙线条，不均匀上色">涂鸦手账</span>
+            <span class="chip" data-value="极简剪影 icon，单色图形，透明背景">剪影 icon</span>
+          </div>
+          <div style="height:12px"></div>
+          <div class="chips" data-target="lighting">
+            <span class="chip" data-value="柔和自然窗光，温暖色调，轻微阴影">柔和窗光</span>
+            <span class="chip" data-value="柔和蓝白光，实验室洁净照明">蓝白实验室光</span>
+            <span class="chip" data-value="温暖室内灯光，家庭陪伴氛围">暖色室内光</span>
+            <span class="chip" data-value="均匀柔光，无强烈硬阴影">均匀柔光</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">
+            <h3>5. 产品 / 角色严格要求</h3>
+            <span>参考图和尺寸要写死</span>
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label for="reference">参考图要求</label>
+              <textarea id="reference" placeholder="例：机器人外观严格参考上传素材，不改变脸部、眼睛、头部细节"></textarea>
+            </div>
+            <div class="field">
+              <label for="scale">尺寸 / 比例</label>
+              <textarea id="scale" placeholder="例：机器人约 16cm，小巧桌面摆件大小，不要做得过大"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">
+            <h3>6. 禁区与负面关键词</h3>
+            <span>不给禁区，模型就会自由发挥到宇宙边缘</span>
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label for="mustNot">明确不要</label>
+              <textarea id="mustNot" placeholder="例：不要文字，不要 logo，不要新增家具，不改变客厅布局"></textarea>
+            </div>
+            <div class="field">
+              <label for="negative">负面关键词</label>
+              <textarea id="negative" placeholder="例：畸形手指、比例错误、低清晰度、过度锐化、过曝、杂乱背景"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">
+            <h3>快速补词卡</h3>
+            <span>点一下，少敲十个字</span>
+          </div>
+          <div class="mini-grid">
+            <div class="mini-card" onclick="quickFill('family')"><strong>家庭陪伴</strong><p>客厅、书桌、睡前、温暖关系。</p></div>
+            <div class="mini-card" onclick="quickFill('lab')"><strong>专业可信</strong><p>实验室、检测台、安全认证气质。</p></div>
+            <div class="mini-card" onclick="quickFill('product')"><strong>产品高级</strong><p>留白、局部放大、商业精修。</p></div>
+            <div class="mini-card" onclick="quickFill('icon')"><strong>功能 Icon</strong><p>剪影、透明背景、简单明确。</p></div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="result-panel" id="output">
+        <div class="result-head">
+          <h3>生成结果</h3>
+          <button class="btn btn-subtle" onclick="generateAll()">刷新</button>
+        </div>
+        <div class="tabs">
+          <button class="tab active" data-view="prompt" onclick="setView('prompt')">完整提示词</button>
+          <button class="tab" data-view="keywords" onclick="setView('keywords')">关键词层</button>
+          <button class="tab" data-view="json" onclick="setView('json')">结构化</button>
+        </div>
+        <div class="output" id="resultText"></div>
+        <div class="result-actions">
+          <button class="btn btn-primary" onclick="copyCurrent()">复制当前</button>
+          <button class="btn btn-ghost" onclick="exportTxt()">导出 TXT</button>
+          <button class="btn btn-dark full" onclick="copyPromptOnly()">只复制完整生图提示词</button>
+          <button class="btn btn-danger full" onclick="resetAll()">清空重来</button>
+        </div>
+        <div class="notice">小提醒：这只是帮你把关键词变清楚，不会自动生图。真要出图时，再把完整提示词丢进你要用的平台。</div>
+      </aside>
+    </section>
+
+    <div class="footer">
+      本文件为离线 HTML 工具，不依赖外部脚本。视觉风格参考浅色卡片式商店页面，但不包含任何官方素材。<br />
+      建议工作流：先写一句粗需求 → 选择模板 → 补主体和禁区 → 复制完整提示词。
+    </div>
+  </main>
+
+  <div class="toast" id="toast">已复制</div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const ids = ['rawIdea','subject','scene','interaction','emotion','ratio','camera','layout','style','lighting','color','texture','reference','scale','mustNot','negative'];
+    let currentTemplate = 'ecommerce';
+    let currentView = 'prompt';
+    let cache = { prompt: '', keywords: '', json: '' };
+
+    const templateDefaults = {
+      ecommerce: {
+        style: '电商详情页视觉，真实摄影质感，干净明亮，高级商业摄影',
+        layout: '主体明确，画面干净，视觉焦点集中，右侧或顶部保留标题空间',
+        lighting: '均匀柔光，主体边缘清晰，背景不过暗',
+        color: '浅色系、低饱和、干净高级',
+        mustNot: '不要文字，不要 logo，不要杂乱背景，不要过度夸张的道具'
+      },
+      scene: {
+        style: '真实摄影，生活化场景，温馨自然，浅景深',
+        layout: '人物与产品形成自然互动，主体比例真实，空间关系合理',
+        lighting: '柔和自然窗光，温暖室内光，轻微阴影',
+        color: '暖白、浅木色、低饱和家庭色调',
+        mustNot: '不要人物肢体畸形，不要新增不必要家具，不要强行摆拍感'
+      },
+      detail: {
+        style: '产品商业摄影，科技感，局部特写，材质精修',
+        layout: '产品局部放大展示，细节清晰可见，背景简洁',
+        lighting: '柔和棚拍光，边缘高光清晰，阴影干净',
+        color: '冷白、浅灰、柔和蓝色点缀',
+        mustNot: '不要模糊边缘，不要错误结构，不要夸张反光，不要多余文字'
+      },
+      icon: {
+        style: '极简剪影 icon，单色图形，透明背景，干净线条',
+        layout: '图标居中，造型简单易识别，适合电商详情页功能点展示',
+        lighting: '无复杂光影，平面化展示',
+        color: '单色或深灰色',
+        mustNot: '不要复杂背景，不要真实照片，不要渐变过多，不要文字'
+      },
+      poster: {
+        style: '科技感卡片式海报，柔和渐变背景，干净明亮，高级感',
+        layout: '模块化卡片分区，圆角矩形，信息层级清楚，主体与卖点分离',
+        lighting: '柔和环境光，轻微玻璃拟态效果',
+        color: '蓝白、浅紫、银灰，低饱和科技色',
+        mustNot: '不要拥挤排版，不要小字堆砌，不要杂乱装饰'
+      },
+      style: {
+        style: '风格化插画，明确保留主体特征，画面有趣但不失控',
+        layout: '主体居中，背景元素围绕主体展开，视觉层次清晰',
+        lighting: '符合风格的柔和光影',
+        color: '根据指定风格控制主色调',
+        mustNot: '不要改变主体身份特征，不要过度复杂，不要脏乱画面'
+      }
+    };
+
+    const quickPresets = {
+      family: {
+        scene: '温馨现代家庭场景，浅色家具，干净自然的生活空间',
+        interaction: '人物与产品自然互动，体现陪伴、回应和安心感',
+        emotion: '温馨、轻松、可信、有陪伴感',
+        style: '真实摄影，柔和窗光，温暖色调，浅景深，干净高级的家庭陪伴氛围',
+        lighting: '柔和自然窗光，温暖室内光，轻微阴影',
+        color: '暖白、浅木色、柔和低饱和色调'
+      },
+      lab: {
+        scene: '高级白色实验室，精密检测台，背景为柔焦检测设备',
+        emotion: '专业、可信、干净、安全感',
+        style: '真实摄影，干净科技感，电商详情页视觉，高级安全感',
+        lighting: '柔和蓝白光，实验室洁净照明，透明扫描线氛围',
+        color: '白色、浅灰、柔和蓝色、少量绿色安全感点缀'
+      },
+      product: {
+        layout: '产品为视觉中心，局部细节清晰，背景留白充足，适合后期添加文案',
+        style: '商业产品摄影，电商精修，干净明亮，高级感',
+        lighting: '柔和棚拍光，边缘轮廓清晰，材质高光自然',
+        texture: '真实产品材质，边缘清晰，细节锐利但不过度锐化'
+      },
+      icon: {
+        style: '极简剪影 icon，单色图形，透明背景，适合电商详情页',
+        layout: '居中构图，形状简洁，功能识别度高',
+        color: '深灰或单色',
+        negative: '复杂背景、真实照片、过多细节、文字、logo、锯齿边缘'
+      }
+    };
+
+    function scrollToBuilder(){ $('builder').scrollIntoView({behavior:'smooth'}); }
+
+    function selectTemplate(name){
+      currentTemplate = name;
+      document.querySelectorAll('.template-card').forEach(card => card.classList.toggle('active', card.dataset.template === name));
+      const def = templateDefaults[name];
+      Object.entries(def).forEach(([key, val]) => {
+        if(!$(key).value.trim()) $(key).value = val;
+      });
+      generateAll();
+    }
+
+    function quickFill(name){
+      const preset = quickPresets[name];
+      Object.entries(preset).forEach(([key, val]) => appendValue(key, val));
+      generateAll();
+      showToast('已补充关键词');
+    }
+
+    function appendValue(id, text){
+      const el = $(id);
+      const current = el.value.trim();
+      if(!current) el.value = text;
+      else if(!current.includes(text)) el.value = current + '，' + text;
+    }
+
+    function applyXiaokangPreset(){
+      $('subject').value = $('subject').value.trim() || '小康智能机器人';
+      appendValue('reference', '机器人外观严格参考上传素材，保持脸部、眼睛、头部和整体造型细节，不改变产品识别特征');
+      appendValue('scale', '机器人约 16cm，小巧桌面摆件大小，腿部比例正常，不要缩短，不要变胖，不要做得过大');
+      appendValue('negative', '机器人比例错误、腿变短、腿变胖、脸部细节改变、眼睛形状错误、头部结构错误、产品过大、玩具廉价感');
+      appendValue('mustNot', '不要改变机器人外观，不要改变脸部、眼睛和头部细节，不要让机器人变形');
+      generateAll();
+      showToast('已加入小康机器人约束');
+    }
+
+    function loadExample(){
+      $('rawIdea').value = '生成一张小男孩坐在书桌前写作业的场景图，机器人站在书桌上，仿佛在指导小男孩做功课。';
+      $('subject').value = '小康智能机器人、小男孩';
+      $('scene').value = '儿童书桌前，温馨家庭学习空间';
+      $('interaction').value = '小男孩背对镜头写作业，机器人站在作业本前方，仿佛正在说话辅导';
+      $('emotion').value = '温馨、专注、安心、有陪伴感';
+      $('ratio').value = '9:16 竖版电商详情页构图';
+      $('camera').value = '从小男孩肩膀后方视角观察画面，前景有书桌和作业本';
+      $('layout').value = '机器人位于桌面视觉焦点，孩子在前景形成自然互动，背景干净虚化';
+      $('style').value = '真实摄影，电商详情页视觉，柔和窗光，温暖色调，浅景深，干净高级';
+      $('lighting').value = '柔和自然窗光，温暖室内光，轻微阴影';
+      $('color').value = '暖白、浅木色、低饱和家庭色调';
+      $('texture').value = '真实桌面纹理，作业本细节自然，产品边缘清晰';
+      $('reference').value = '机器人外观严格参考上传素材，不改变脸部、眼睛和头部细节';
+      $('scale').value = '机器人约 16cm，小巧桌面摆件大小，腿部比例正常，不要缩短，不要变胖';
+      $('mustNot').value = '不要文字，不要 logo，不要新增无关家具，不要改变机器人外观';
+      $('negative').value = '畸形手指、人物比例错误、机器人腿短、机器人变胖、脸部细节错误、低清晰度、过曝、杂乱背景';
+      selectTemplate('scene');
+      generateAll();
+      showToast('已载入示例');
+    }
+
+    function collect(){
+      const data = {};
+      ids.forEach(id => data[id] = $(id).value.trim());
+      data.template = currentTemplate;
+      return data;
+    }
+
+    function sentence(label, value){
+      return value ? `${label}：${value}` : '';
+    }
+
+    function generatePrompt(data){
+      const chunks = [];
+      if(data.rawIdea) chunks.push(`任务：${data.rawIdea}`);
+      chunks.push(sentence('主体', data.subject));
+      chunks.push(sentence('场景', data.scene));
+      chunks.push(sentence('动作与关系', data.interaction));
+      chunks.push(sentence('情绪氛围', data.emotion));
+      chunks.push(sentence('画面比例', data.ratio));
+      chunks.push(sentence('镜头视角', data.camera));
+      chunks.push(sentence('构图布局', data.layout));
+      chunks.push(sentence('画面风格', data.style));
+      chunks.push(sentence('光线', data.lighting));
+      chunks.push(sentence('色彩', data.color));
+      chunks.push(sentence('细节质感', data.texture));
+      chunks.push(sentence('参考图要求', data.reference));
+      chunks.push(sentence('尺寸比例要求', data.scale));
+      chunks.push(sentence('不要出现', data.mustNot));
+      chunks.push(sentence('负面关键词', data.negative));
+      return chunks.filter(Boolean).join('，\n') + '。';
+    }
+
+    function generateKeywords(data){
+      const groups = [
+        ['视觉主体', [data.subject, data.reference, data.scale]],
+        ['场景关系', [data.scene, data.interaction, data.emotion]],
+        ['构图镜头', [data.ratio, data.camera, data.layout]],
+        ['风格光线', [data.style, data.lighting, data.color, data.texture]],
+        ['禁区控制', [data.mustNot, data.negative]],
+      ];
+      return groups.map(([name, arr]) => `【${name}】\n${arr.filter(Boolean).map(v => '• ' + v).join('\n') || '• 待补充'}`).join('\n\n');
+    }
+
+    function generateJson(data){
+      const structured = {
+        image_task_type: data.template,
+        raw_idea: data.rawIdea,
+        subject: data.subject,
+        scene: data.scene,
+        interaction: data.interaction,
+        mood: data.emotion,
+        composition: {
+          aspect_ratio: data.ratio,
+          camera_angle: data.camera,
+          layout: data.layout
+        },
+        visual_style: {
+          style: data.style,
+          lighting: data.lighting,
+          color_palette: data.color,
+          texture_detail: data.texture
+        },
+        product_or_character_constraints: {
+          reference_image_rules: data.reference,
+          scale_and_proportion: data.scale
+        },
+        negative_rules: {
+          must_not: data.mustNot,
+          negative_keywords: data.negative
+        },
+        final_prompt_cn: generatePrompt(data)
+      };
+      return JSON.stringify(structured, null, 2);
+    }
+
+    function calculateScore(data){
+      const checks = [
+        { key: 'subject', label: '主体是否明确' },
+        { key: 'scene', label: '场景是否明确' },
+        { key: 'interaction', label: '动作关系是否明确' },
+        { key: 'ratio', label: '画面比例是否明确' },
+        { key: 'layout', label: '构图布局是否明确' },
+        { key: 'style', label: '风格是否明确' },
+        { key: 'lighting', label: '光线是否明确' },
+        { key: 'mustNot', label: '禁区是否明确' },
+        { key: 'negative', label: '负面关键词是否明确' },
+        { key: 'reference', label: '参考图/产品约束是否明确' }
+      ];
+      const done = checks.filter(c => (data[c.key] || '').length > 0);
+      const score = Math.round(done.length / checks.length * 100);
+      $('scoreNumber').textContent = score;
+      $('scoreRing').style.setProperty('--score', score);
+      const list = checks.slice(0, 6).map(c => {
+        const ok = (data[c.key] || '').length > 0;
+        return `<div class="check-item ${ok ? 'ok' : 'warn'}"><span class="check-dot">${ok ? '✓' : '!'}</span><span>${c.label}${ok ? '：已补充' : '：建议补上'}</span></div>`;
+      }).join('');
+      $('checkList').innerHTML = list;
+    }
+
+    function generateAll(){
+      const data = collect();
+      cache.prompt = generatePrompt(data);
+      cache.keywords = generateKeywords(data);
+      cache.json = generateJson(data);
+      calculateScore(data);
+      renderView();
+      localStorage.setItem('imagePromptBuilderData', JSON.stringify(data));
+    }
+
+    function setView(view){
+      currentView = view;
+      document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.view === view));
+      renderView();
+    }
+
+    function renderView(){
+      const out = $('resultText');
+      out.classList.toggle('mono', currentView === 'json');
+      out.textContent = cache[currentView] || '';
+    }
+
+    async function copyText(text){
+      if(!text.trim()) return showToast('没东西可复制');
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast('已复制');
+      } catch(e) {
+        const temp = document.createElement('textarea');
+        temp.value = text;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand('copy');
+        document.body.removeChild(temp);
+        showToast('已复制');
+      }
+    }
+    function copyCurrent(){ copyText(cache[currentView]); }
+    function copyPromptOnly(){ copyText(cache.prompt); }
+
+    function exportTxt(){
+      const content = `生图关键词完善器导出\n\n【完整提示词】\n${cache.prompt}\n\n【关键词分层】\n${cache.keywords}\n\n【结构化】\n${cache.json}`;
+      const blob = new Blob([content], {type:'text/plain;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '生图关键词完善结果.txt';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('已导出 TXT');
+    }
+
+    function resetAll(){
+      ids.forEach(id => $(id).value = id === 'ratio' ? '9:16 竖版电商详情页构图' : '');
+      localStorage.removeItem('imagePromptBuilderData');
+      generateAll();
+      showToast('已清空');
+    }
+
+    function showToast(text){
+      const toast = $('toast');
+      toast.textContent = text;
+      toast.classList.add('show');
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => toast.classList.remove('show'), 1600);
+    }
+
+    document.querySelectorAll('.chips').forEach(group => {
+      const target = group.dataset.target;
+      group.addEventListener('click', e => {
+        const chip = e.target.closest('.chip');
+        if(!chip) return;
+        chip.classList.toggle('active');
+        appendValue(target, chip.dataset.value);
+        generateAll();
+      });
+    });
+
+    ids.forEach(id => $(id).addEventListener('input', generateAll));
+    ids.forEach(id => $(id).addEventListener('change', generateAll));
+
+    function restore(){
+      const saved = localStorage.getItem('imagePromptBuilderData');
+      if(saved){
+        try {
+          const data = JSON.parse(saved);
+          ids.forEach(id => { if(data[id] !== undefined) $(id).value = data[id]; });
+          currentTemplate = data.template || 'ecommerce';
+          document.querySelectorAll('.template-card').forEach(card => card.classList.toggle('active', card.dataset.template === currentTemplate));
+        } catch(e) {}
+      } else {
+        selectTemplate('ecommerce');
+      }
+      generateAll();
+    }
+    restore();
+  </script>
+</body>
+</html>
