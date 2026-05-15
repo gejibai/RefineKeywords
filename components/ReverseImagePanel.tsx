@@ -65,16 +65,16 @@ export function ReverseImagePanel() {
   return (
     <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_430px]">
       <div className="space-y-5">
-        <div className="rounded-[28px] border border-white bg-white/95 p-6 shadow-card">
+        <div className="rounded-[28px] border border-[#8d5a34]/20 bg-[#fffdf3]/95 p-6 shadow-card">
           <div className="grid gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">
-            <label className="relative grid min-h-[300px] cursor-pointer place-items-center overflow-hidden rounded-[28px] border border-dashed border-black/20 bg-[#fbfbfd] p-5 text-center">
+            <label className="relative grid min-h-[300px] cursor-pointer place-items-center overflow-hidden rounded-[28px] border border-dashed border-[#48a9b6]/45 bg-[#e9fbfb]/70 p-5 text-center transition hover:bg-[#e9fbfb]">
               <input className="absolute inset-0 opacity-0" type="file" accept="image/*" onChange={(event) => handleFile(event.target.files?.[0])} />
               {preview ? (
                 <img ref={imgRef} src={preview} alt="本地预览" className="max-h-[280px] rounded-3xl object-contain shadow-card" onLoad={analyze} />
               ) : (
-                <span className="flex flex-col items-center gap-3 text-sm text-[#6e6e73]">
+                <span className="flex flex-col items-center gap-3 text-sm text-[#687c72]">
                   <Upload />
-                  <b className="text-[#1d1d1f]">上传图片，本地分析</b>
+                  <b className="text-[#31504a]">上传图片，本地分析</b>
                   图片只在浏览器内预览与 Canvas 分析，不上传服务器。
                 </span>
               )}
@@ -96,7 +96,7 @@ export function ReverseImagePanel() {
           <canvas ref={canvasRef} className="hidden" />
         </div>
 
-        <div className="rounded-[28px] border border-white bg-white/95 p-6 shadow-card">
+        <div className="rounded-[28px] border border-[#8d5a34]/20 bg-[#fffdf3]/95 p-6 shadow-card">
           <div className="grid gap-4 md:grid-cols-2">
             <FieldGroup label="图中主体">
               <input className={inputClass} value={data.subject} onChange={(event) => update("subject", event.target.value)} placeholder="例：人物、产品、室内物件" />
@@ -121,10 +121,10 @@ export function ReverseImagePanel() {
         </div>
       </div>
 
-      <aside className="sticky top-24 rounded-[28px] border border-white bg-white/95 p-6 shadow-soft">
-        <h2 className="mb-4 text-xl font-extrabold tracking-tight">反推摘要</h2>
-        <pre className="min-h-[360px] whitespace-pre-wrap break-words rounded-3xl border border-black/10 bg-[#fbfbfd] p-4 text-sm leading-7">{summary}</pre>
-        <p className="mt-4 rounded-2xl bg-[#fff9e8] px-4 py-3 text-sm leading-6 text-[#694500]">
+      <aside className="sticky top-24 rounded-[28px] border border-[#8d5a34]/20 bg-[#fffdf3]/95 p-6 shadow-island">
+        <h2 className="mb-4 text-xl font-extrabold tracking-tight text-[#31504a]">反推摘要</h2>
+        <pre className="min-h-[360px] whitespace-pre-wrap break-words rounded-3xl border border-[#8d5a34]/15 bg-white/80 p-4 text-sm leading-7 text-[#31504a] shadow-[inset_0_2px_10px_rgba(141,90,52,.06)]">{summary}</pre>
+        <p className="mt-4 rounded-2xl border border-[#f27964]/20 bg-[#fff1c4] px-4 py-3 text-sm leading-6 text-[#7c5633]">
           原图不会写入 localStorage；页面只保存文字字段和 Canvas 分析结果。
         </p>
       </aside>
@@ -134,9 +134,9 @@ export function ReverseImagePanel() {
 
 function Info({ title, value }: { title: string; value: string }) {
   return (
-    <div className="rounded-3xl border border-black/5 bg-[#f7f7f9] p-4">
-      <b className="text-sm">{title}</b>
-      <p className="mt-2 whitespace-pre-line text-xs leading-5 text-[#6e6e73]">{value}</p>
+    <div className="rounded-3xl border border-[#8d5a34]/15 bg-white/70 p-4">
+      <b className="text-sm text-[#31504a]">{title}</b>
+      <p className="mt-2 whitespace-pre-line text-xs leading-5 text-[#687c72]">{value}</p>
     </div>
   );
 }
