@@ -70,7 +70,7 @@ export function KeywordForm() {
   return (
     <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_430px]">
       <div className="space-y-5">
-        <div className="rounded-[28px] border border-[#8d5a34]/20 bg-[#fffdf3]/95 p-6 shadow-card">
+        <div className="rounded-[28px] border border-white bg-white/95 p-6 shadow-card">
           <FieldGroup label="原始想法" hint="输入一句粗略需求，然后选择离线或 AI 拆解。">
             <textarea className={inputClass} rows={4} value={data.rawIdea} onChange={(event) => update("rawIdea", event.target.value)} placeholder="例：生成一张孩子在书桌前学习的温馨真实摄影场景图" />
           </FieldGroup>
@@ -83,10 +83,10 @@ export function KeywordForm() {
               aiBusy={busy}
             />
           </div>
-          {message ? <p className="mt-4 rounded-2xl border border-[#48a9b6]/20 bg-[#e9fbfb] px-4 py-3 text-sm text-[#2f7178]">{message}</p> : null}
+          {message ? <p className="mt-4 rounded-2xl bg-[#eef6ff] px-4 py-3 text-sm text-[#0b4f8a]">{message}</p> : null}
         </div>
 
-        <div className="rounded-[28px] border border-[#8d5a34]/20 bg-[#fffdf3]/95 p-6 shadow-card">
+        <div className="rounded-[28px] border border-white bg-white/95 p-6 shadow-card">
           <div className="grid gap-4 md:grid-cols-2">
             {fields.map(([key, label, placeholder, type]) => (
               <FieldGroup key={key} label={label} className={type === "textarea" ? "md:col-span-2" : ""}>
